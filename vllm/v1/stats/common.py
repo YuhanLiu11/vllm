@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 import time
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
@@ -10,10 +12,11 @@ from msgspec import field as msgspec_field
 from vllm.sampling_params import SamplingParams
 
 
-class RequestStatsUpdate(msgspec.Struct,
-                         array_like=True,
-                         omit_defaults=True,
-                         gc=False):
+class RequestStatsUpdate(
+        msgspec.Struct,  # type: ignore
+        array_like=True,
+        omit_defaults=True,
+        gc=False):
     """
     An update to the request stats.
 
@@ -310,8 +313,8 @@ class RequestStats:
             return []
         latency_s_lst = []
         for i in range(1, len(self.output_token_ts_s_lst)):
-            assert (self.output_token_ts_s_lst[i] >=
-                    self.output_token_ts_s_lst[i - 1])
+            assert (self.output_token_ts_s_lst[i]
+                    >= self.output_token_ts_s_lst[i - 1])
             latency_s = (self.output_token_ts_s_lst[i] -
                          self.output_token_ts_s_lst[i - 1])
             latency_s_lst.append(latency_s)
@@ -341,8 +344,8 @@ class RequestStats:
             self.queued_ts_s = ts
         elif update.type == RequestStatsUpdate.Type.PREFILLING:
             self.prefill_start_ts_s_lst.append(ts)
-            self.num_cached_tokens = update.num_cached_tokens
-            self.num_computed_tokens = update.num_computed_tokens
+            self.num_cached_tokens = update.num_cached_tokens or 0
+            self.num_computed_tokens = update.num_computed_tokens or 0
         elif update.type == RequestStatsUpdate.Type.PREEMPTED:
             self._reset_for_preemption(ts)
         elif update.type == RequestStatsUpdate.Type.DECODING:
@@ -350,7 +353,7 @@ class RequestStats:
         elif update.type == RequestStatsUpdate.Type.DETOKENIZED:
             self._record_detokenized_output(
                 ts,
-                update.num_new_tokens,
+                update.num_new_tokens or 0,
             )
         elif update.type == RequestStatsUpdate.Type.FINISHED:
             self.finished_ts_s = ts
@@ -425,10 +428,11 @@ class EngineCoreProcessStats:
     output_queue_size: Optional[int] = None
 
 
-class EngineCoreStatsSnapshot(msgspec.Struct,
-                              array_like=True,
-                              omit_defaults=True,
-                              gc=False):
+class EngineCoreStatsSnapshot(
+        msgspec.Struct,  # type: ignore
+        array_like=True,
+        omit_defaults=True,
+        gc=False):
     """
     A snapshot of the EngineCore's current stats over a period of time.
     """
